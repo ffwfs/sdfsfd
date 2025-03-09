@@ -25,25 +25,17 @@ local OrionLib = {
 	SaveCfg = false
 }
 
--- Feather Icons with fallback
-local Icons = {}
-local Success, Response = pcall(function()
-	Icons = HttpService:JSONDecode(game:HttpGetAsync("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")).icons
-end)
-
-if not Success then
-	warn("\nOrion Library - Failed to load Feather Icons. Error: " .. tostring(Response) .. "\n")
-	Icons = {
-		["chevron-down"] = "rbxassetid://7072706796",
-		["check"] = "rbxassetid://3944680095",
-		["x"] = "rbxassetid://7072725342",
-		["minus"] = "rbxassetid://7072719338",
-		["plus"] = "rbxassetid://7072720870"
-	}
-end
+-- Remove Feather Icons and use static placeholders
+local Icons = {
+	["chevron-down"] = "rbxassetid://7072706796",
+	["check"] = "rbxassetid://3944680095",
+	["x"] = "rbxassetid://7072725342",
+	["minus"] = "rbxassetid://7072719338",
+	["plus"] = "rbxassetid://7072720870"
+}
 
 local function GetIcon(IconName)
-	return Icons[IconName] or "rbxassetid://3944703587"
+	return Icons[IconName] or "rbxassetid://3944703587" -- Default fallback icon
 end
 
 -- ScreenGui Setup
@@ -580,7 +572,6 @@ function OrionLib:MakeWindow(WindowConfig)
 	}), "Main")
 
 	if WindowConfig.ShowIcon then
-		WindowName.Position = UDim2.new(0, 50, 0, -24)
 		SetProps(MakeElement("Image", WindowConfig.Icon), {
 			Size = UDim2.new(0, 20, 0, 20),
 			Position = UDim2.new(0, 25, 0, 15),
