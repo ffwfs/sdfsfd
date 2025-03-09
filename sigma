@@ -25,7 +25,6 @@ local OrionLib = {
 	SaveCfg = false
 }
 
--- Remove Feather Icons and use static placeholders
 local Icons = {
 	["chevron-down"] = "rbxassetid://7072706796",
 	["check"] = "rbxassetid://3944680095",
@@ -35,10 +34,9 @@ local Icons = {
 }
 
 local function GetIcon(IconName)
-	return Icons[IconName] or "rbxassetid://3944703587" -- Default fallback icon
+	return Icons[IconName] or "rbxassetid://3944703587"
 end
 
--- ScreenGui Setup
 local Orion = Instance.new("ScreenGui")
 Orion.Name = "Orion"
 Orion.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -88,7 +86,7 @@ local function AddDraggingFunctionality(DragPoint, Main)
 		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
 			Dragging = true
 			MousePos = Input.Position
-			FramePos = Main.Position
+			FramePos = Main.Position or UDim2.new(0, 0, 0, 0)
 			local Connection
 			Connection = AddConnection(Input.Changed, function()
 				if Input.UserInputState == Enum.UserInputState.End then
@@ -141,7 +139,7 @@ local function SetProps(Element, Props)
 end
 
 local function SetChildren(Element, Children)
-	for _, Child in pairs(Children) do
+	for _, Child in pairs(Children or {}) do
 		Child.Parent = Element
 	end
 	return Element
@@ -226,7 +224,6 @@ local function CheckKey(Table, Key)
 	end
 end
 
--- Element Creation
 CreateElement("Corner", function(Scale, Offset)
 	return Create("UICorner", {CornerRadius = UDim.new(Scale or 0, Offset or 10)})
 end)
@@ -268,7 +265,7 @@ CreateElement("Button", function()
 	return Create("TextButton", {
 		Text = "",
 		AutoButtonColor = false,
-		BackgroundTransparency = 1,
+		BackgroundTransparency = 0.5, -- Adjusted for interactivity
 		BorderSizePixel = 0,
 		ZIndex = 4
 	})
@@ -289,12 +286,11 @@ CreateElement("ScrollFrame", function(Color, Width)
 end)
 
 CreateElement("Image", function(ImageID)
-	local ImageNew = Create("ImageLabel", {
+	return Create("ImageLabel", {
 		Image = GetIcon(ImageID),
 		BackgroundTransparency = 1,
 		ZIndex = 3
 	})
-	return ImageNew
 end)
 
 CreateElement("ImageButton", function(ImageID)
@@ -319,7 +315,6 @@ CreateElement("Label", function(Text, TextSize, Transparency)
 	})
 end)
 
--- Notification System
 local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
 	MakeElement("List", 0, 5)
 }), {
@@ -663,6 +658,7 @@ function OrionLib:MakeWindow(WindowConfig)
 		local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
 			Size = UDim2.new(1, 0, 0, 30),
 			Parent = TabHolder,
+			BackgroundTransparency = 0.5, -- Ensure interactivity
 			ZIndex = 3
 		}), {
 			AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
@@ -817,6 +813,7 @@ function OrionLib:MakeWindow(WindowConfig)
 				Click
 			}), "Second")
 
+			Click.Parent = ButtonFrame
 			AddConnection(Click.MouseButton1Click, function()
 				task.spawn(ButtonConfig.Callback)
 			end)
@@ -879,6 +876,7 @@ function OrionLib:MakeWindow(WindowConfig)
 				Click
 			}), "Second")
 
+			Click.Parent = ToggleFrame
 			function Toggle:Set(Value)
 				Toggle.Value = Value
 				TweenService:Create(ToggleBox, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
@@ -975,7 +973,7 @@ function OrionLib:MakeWindow(WindowConfig)
 
 			local function UpdateSlider()
 				local SizeScale = (Slider.Value - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
-				TweenService:Create(SliderDrag, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Size = UDim2.fromScale(SizeScale, 1)}):Play()
+				TweenService:Create(SliderDrag, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Size = UDim2.new(SizeScale, 0, 1, 0)}):Play()
 				SliderBar.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName
 				SliderDrag.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName
 				SliderConfig.Callback(Slider.Value)
@@ -1088,6 +1086,7 @@ function OrionLib:MakeWindow(WindowConfig)
 				AddThemeObject(MakeElement("Stroke"), "Stroke")
 			}), "Second")
 
+			Click.Parent = DropdownFrame.F
 			AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
 				DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
 			end)
@@ -1207,6 +1206,7 @@ function OrionLib:MakeWindow(WindowConfig)
 				Click
 			}), "Second")
 
+			Click.Parent = BindFrame
 			AddConnection(BindBox.Value:GetPropertyChangedSignal("Text"), function()
 				TweenService:Create(BindBox, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, BindBox.Value.TextBounds.X + 16, 0, 24)}):Play()
 			end)
@@ -1317,6 +1317,7 @@ function OrionLib:MakeWindow(WindowConfig)
 				Click
 			}), "Second")
 
+			Click.Parent = TextboxFrame
 			AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), function()
 				TweenService:Create(TextContainer, TweenInfo.new(0.45, Enum.EasingStyle.Quint), {Size = UDim2.new(0, TextboxActual.TextBounds.X + 16, 0, 24)}):Play()
 			end)
@@ -1451,6 +1452,7 @@ function OrionLib:MakeWindow(WindowConfig)
 				AddThemeObject(MakeElement("Stroke"), "Stroke")
 			}), "Second")
 
+			Click.Parent = ColorpickerFrame.F
 			AddConnection(Click.MouseButton1Click, function()
 				Colorpicker.Toggled = not Colorpicker.Toggled
 				TweenService:Create(ColorpickerFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Size = Colorpicker.Toggled and UDim2.new(1, 0, 0, 150) or UDim2.new(1, 0, 0, 38)}):Play()
@@ -1488,7 +1490,8 @@ function OrionLib:MakeWindow(WindowConfig)
 			end)
 
 			AddConnection(Hue.InputBegan, function(Input)
-				if Input.UserInputType == Enum.UserInputType.MouseButton1 and Colorpicker.Toggled then
+				if Input.UserInputType == Enum.UserInputType.Mouse
+				Button1 and Colorpicker.Toggled then
 					ColorH = 1 - math.clamp((Input.Position.Y - Hue.AbsolutePosition.Y) / Hue.AbsoluteSize.Y, 0, 1)
 					HueSelection.Position = UDim2.new(0.5, 0, 1 - ColorH, 0)
 					UpdateColorPicker()
@@ -1505,18 +1508,6 @@ function OrionLib:MakeWindow(WindowConfig)
 				end
 			end)
 
-			function Colorpicker:Set(Value)
-				Colorpicker.Value = Value
-				local H, S, V = Color3.toHSV(Value)
-				ColorH, ColorS, ColorV = H, S, V
-				ColorSelection.Position = UDim2.new(ColorS, 0, 1 - ColorV, 0)
-				HueSelection.Position = UDim2.new(0.5, 0, 1 - ColorH, 0)
-				Color.BackgroundColor3 = Color3.fromHSV(ColorH, 1, 1)
-				ColorpickerBox.BackgroundColor3 = Value
-				ColorpickerConfig.Callback(Value)
-				if ColorpickerConfig.Save then SaveCfg(game.GameId) end
-			end
-
 			Colorpicker:Set(Colorpicker.Value)
 			if ColorpickerConfig.Flag then
 				OrionLib.Flags[ColorpickerConfig.Flag] = Colorpicker
@@ -1526,8 +1517,8 @@ function OrionLib:MakeWindow(WindowConfig)
 
 		return ElementFunction
 	end
+
 	return TabFunction
 end
 
--- Library Return
 return OrionLib
